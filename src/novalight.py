@@ -23,11 +23,11 @@ import urandom
 # PINK = (231,84,128)
 
 def pack(color):
-    return(color[0]<<16 | color[1]<<8 | color[2])
+    return color[0]<<16 | color[1]<<8 | color[2]
 
-OFF = pack((0,0,0))
+OFF = pack((0, 0, 0))
 ORANGE = pack((155, 50, 0))
-PINK = pack((231,84,128))
+PINK = pack((231, 84, 128))
 PURPLE = machine.Neopixel.PURPLE
 GREEN = machine.Neopixel.GREEN
 YELLOW = machine.Neopixel.YELLOW
@@ -45,7 +45,7 @@ OLIVE = machine.Neopixel.OLIVE
 TEAL = machine.Neopixel.TEAL
 NAVY = machine.Neopixel.NAVY
 
-color_array = [GREEN,PURPLE,ORANGE,YELLOW,CYAN,PINK,OFF,WHITE]
+color_array = [GREEN, PURPLE, ORANGE, YELLOW, CYAN, PINK, OFF, WHITE]
 
 # Pixel numbers
 STAR_FRAG_LEN = 7
@@ -65,14 +65,14 @@ top_nova.show()
 bottom_nova.clear()
 bottom_nova.show()
 
-myI2C = machine.I2C( sda=machine.Pin(21), scl=machine.Pin(22))
+myI2C = machine.I2C(sda=machine.Pin(21), scl=machine.Pin(22))
 rtc = lib.urtc.PCF8523(myI2C)
 is_it_friday = True
 days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
 if True:   # change to True if you want to write the time!
     #                     year, mon, date, hour, wday, min, sec, msec
-    t = lib.urtc.datetime_tuple(2020,  8,   17,  1,  21,  59,    50,   0) 
+    t = lib.urtc.datetime_tuple(2020, 8, 17, 1, 21, 59, 50, 0)
     # you must set year, mon, date, hour, min, sec and weekday
     # yearday is not supported, isdst can be set but we don't do anything with it at this time
 
@@ -83,26 +83,26 @@ if True:   # change to True if you want to write the time!
 
 def solid(light_unit, length, color):
     for i in range(1, length):
-        light_unit.set(i,color)
+        light_unit.set(i, color)
         utime.sleep(.07)
         light_unit.show()
 
 def breathe(light_unit, length, color):
     for i in range(1, length):
-        light_unit.set(i,0,white=255,update=False)
+        light_unit.set(i, 0, white=color, update=False)
         utime.sleep(.07)
         light_unit.show()
 
     utime.sleep(1)
 
     for i in range(1, length):
-        light_unit.set(i,OFF,white=0,update=False)
+        light_unit.set(i, OFF, white=0, update=False)
         utime.sleep(.07)
         light_unit.show()
 
 def color_chase(light_unit, light_len, color, wait):
     for i in range(light_len):
-        light_unit.set(i,color)
+        light_unit.set(i, color)
         utime.sleep(wait)
         light_unit.show()
     utime.sleep(0.5)
@@ -151,7 +151,7 @@ oldseconds = 0
 
 while True:
     t = rtc.datetime()
-    if(t.second == oldseconds):
+    if t.second == oldseconds:
         continue
     oldseconds = t.second
     print(t)     # uncomment for debugging
@@ -169,7 +169,7 @@ while True:
         continue
 
     # Top nova light indicates time span
-    if t.minute == 0 and (t.second >=0 and t.second < 10): # top of the hour party cuckoo rainbow
+    if t.minute == 0 and (t.second >= 0 and t.second < 10): # top of the hour party cuckoo rainbow
         rainbow_chase(top_nova, TOP_NOVA_LEN, 0.01)
         rainbow_chase(top_nova, TOP_NOVA_LEN, 0.01)
 
