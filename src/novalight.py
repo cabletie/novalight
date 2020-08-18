@@ -84,19 +84,17 @@ if True:   # change to True if you want to write the time!
 def solid(light_unit, length, color):
     for i in range(1, length):
         light_unit.set(i, color)
-        utime.sleep(.07)
-        light_unit.show()
 
 def breathe(light_unit, length, color):
     for i in range(1, length):
-        light_unit.set(i, 0, white=color, update=False)
+        light_unit.set(i, color, update=False)
         utime.sleep(.07)
         light_unit.show()
 
     utime.sleep(1)
 
     for i in range(1, length):
-        light_unit.set(i, OFF, white=0, update=False)
+        light_unit.set(i, OFF, update=False)
         utime.sleep(.07)
         light_unit.show()
 
@@ -140,7 +138,7 @@ def the_time_is_now(color, friday):
         # top_nova.show()
 
 def it_feels_like(color):
-    bottom_nova.set(1, color, num=BOTTOM_NOVA_LEN, update=True)
+    bottom_nova.set(1, color, num=BOTTOM_NOVA_LEN)
     # bottom_nova.show()
 
 def friday_feels():
