@@ -3,8 +3,8 @@
 import random
 import machine
 import lib.urtc
-# import lib.ntptime
-import ntptime
+import lib.ntptime
+
 # import adafruit_pcf8523
 # https://docs.micropython.org/en/latest/library/time.html
 try:
@@ -80,17 +80,18 @@ days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Satur
 # Connect to network to get NTP time
 mynetwork.do_connect()
 
-if False:   # change to True if you want to write the time!
+if True:   # change to True if you want to write the time!
     t = lib.ntptime.time() # Get the time from the NTP server as seconds since epoch
     #                     year, mon, date, hour, wday, min, sec, msec
     # t = lib.urtc.datetime_tuple(year=2020, month=8, day=17, weekday=1, hour=11, minute=1, second=50, millisecond=0)
     # you must set year, mon, date, hour, min, sec and weekday
     # yearday is not supported, isdst can be set but we don't do anything with it at this time
     tm = time.localtime(t)
-    rtc.datetime((tm[0], tm[1], tm[2], tm[3], tm[4], tm[5], tm[6], 0))
 
-    print("Setting time to:", tm)     # uncomment for debugging
-    rtc.datetime(tm)
+    print("Setting time to: ", tm, t)     # uncomment for debugging
+    print(tm[0], tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0)
+    rtc.datetime((tm[0], tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0))
+    # rtc.datetime(tm)
     print()
 
 
