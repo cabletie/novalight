@@ -20,5 +20,6 @@
         ".micropy/novalight"
     ],
     "python.linting.pylintEnabled": true,
-    "python.languageServer": "Microsoft"
+    "python.languageServer": "Microsoft",
+    "python.formatting.provider": "black"
 }

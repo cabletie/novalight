@@ -1,0 +1,2 @@
+SSID = "Boganville"
+PW = "potsticker"

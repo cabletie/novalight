@@ -1,11 +1,18 @@
 # Novalight ported to LoBo MicroPython by @cabletie
 # main.py
+import random
 import machine
 import lib.urtc
+# import lib.ntptime
+import ntptime
 # import adafruit_pcf8523
-# https://docs.micropython.org/en/latest/library/utime.html
-import utime
-import urandom
+# https://docs.micropython.org/en/latest/library/time.html
+try:
+    import utime as time
+except ImportError:
+    import time
+import mynetwork
+
 # LoBo Neopixel doco is at https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo/wiki/neopixel
 
 # COLORS
@@ -54,8 +61,8 @@ BOTTOM_NOVA_LEN = 16
 
 brightness_val = 0.7
 star_frag = machine.Neopixel(machine.Pin(27), STAR_FRAG_LEN, type=machine.Neopixel.TYPE_RGBW)
-top_nova = machine.Neopixel(machine.Pin(26), TOP_NOVA_LEN, type=machine.Neopixel.TYPE_RGB)
-bottom_nova = machine.Neopixel(machine.Pin(25), BOTTOM_NOVA_LEN, type=machine.Neopixel.TYPE_RGB)
+top_nova = machine.Neopixel(machine.Pin(25), TOP_NOVA_LEN, type=machine.Neopixel.TYPE_RGB)
+bottom_nova = machine.Neopixel(machine.Pin(2), BOTTOM_NOVA_LEN, type=machine.Neopixel.TYPE_RGB)
 
 # Start with eveything turned off
 star_frag.clear()
@@ -70,40 +77,48 @@ rtc = lib.urtc.PCF8523(myI2C)
 is_it_friday = True
 days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
-if True:   # change to True if you want to write the time!
+# Connect to network to get NTP time
+mynetwork.do_connect()
+
+if False:   # change to True if you want to write the time!
+    t = lib.ntptime.time() # Get the time from the NTP server as seconds since epoch
     #                     year, mon, date, hour, wday, min, sec, msec
-    t = lib.urtc.datetime_tuple(2020, 8, 17, 1, 21, 59, 50, 0)
+    # t = lib.urtc.datetime_tuple(year=2020, month=8, day=17, weekday=1, hour=11, minute=1, second=50, millisecond=0)
     # you must set year, mon, date, hour, min, sec and weekday
     # yearday is not supported, isdst can be set but we don't do anything with it at this time
+    tm = time.localtime(t)
+    rtc.datetime((tm[0], tm[1], tm[2], tm[3], tm[4], tm[5], tm[6], 0))
 
-    print("Setting time to:", t)     # uncomment for debugging
-    rtc.datetime(t)
+    print("Setting time to:", tm)     # uncomment for debugging
+    rtc.datetime(tm)
     print()
 
 
 def solid(light_unit, length, color):
-    for i in range(1, length):
-        light_unit.set(i, color)
+    for i in range(length):
+        light_unit.set(i+1, color)
 
 def breathe(light_unit, length, color):
-    for i in range(1, length):
-        light_unit.set(i, color, update=False)
-        utime.sleep(.07)
+    print("breathing on",color)
+    for i in range(length):
+        light_unit.set(i+1, color, update=False)
+        time.sleep(.07)
         light_unit.show()
 
-    utime.sleep(1)
+    time.sleep(1)
 
-    for i in range(1, length):
-        light_unit.set(i, OFF, update=False)
-        utime.sleep(.07)
+    print("breathing off",OFF)
+    for i in range(length):
+        light_unit.set(i+1, OFF, update=False)
+        time.sleep(.07)
         light_unit.show()
 
 def color_chase(light_unit, light_len, color, wait):
     for i in range(light_len):
-        light_unit.set(i, color)
-        utime.sleep(wait)
+        light_unit.set(i+1, color)
+        time.sleep(wait)
         light_unit.show()
-    utime.sleep(0.5)
+    time.sleep(0.5)
 
 # BLACK, WHITE, RED, LIME, BLUE, YELLOW, CYAN, MAGENTA, SILVER, GRAY, MAROON, OLIVE, GREEN, PURPLE, TEAL, NAVY
 def rainbow_chase(light_unit, length, wait):
@@ -115,7 +130,7 @@ def rainbow_chase(light_unit, length, wait):
     color_chase(light_unit, length, PURPLE, wait)
 
 def pick_rando_color():
-    pick = urandom.randint(0, (len(color_array)-1))
+    pick = random.randint(0, (len(color_array)-1))
     rando_color = color_array[pick]
     return rando_color
 
@@ -145,14 +160,13 @@ def friday_feels():
     wait = 0.05
     what_even_is_time(bottom_nova, top_nova, BOTTOM_NOVA_LEN, wait)
 
-oldseconds = 0
-
 while True:
     t = rtc.datetime()
-    if t.second == oldseconds:
-        continue
-    oldseconds = t.second
-    print(t)     # uncomment for debugging
+    if t.weekday == 5:
+        is_it_friday = True
+    else:
+        is_it_friday = False
+    # print(t)     # uncomment for debugging
 
     print("The date is %s %d/%d/%d" % (days[t.weekday], t.day, t.month, t.year))
     print("The time is %d:%02d:%02d" % (t.hour, t.minute, t.second))
@@ -168,8 +182,8 @@ while True:
 
     # Top nova light indicates time span
     if t.minute == 0 and (t.second >= 0 and t.second < 10): # top of the hour party cuckoo rainbow
-        rainbow_chase(top_nova, TOP_NOVA_LEN, 0.01)
-        rainbow_chase(top_nova, TOP_NOVA_LEN, 0.01)
+        rainbow_chase(top_nova, TOP_NOVA_LEN, 0.1)
+        rainbow_chase(top_nova, TOP_NOVA_LEN, 0.1)
 
     if t.hour >= 0 and t.hour < 7: # 12a to 7a, you should be sleeping
         the_time_is_now(OFF, is_it_friday)
@@ -182,7 +196,7 @@ while True:
     elif t.hour >= 18 and t.hour < 23: # 6p to 11p, night time calm
         the_time_is_now(ORANGE, is_it_friday)
     elif t.hour >= 23 and t.hour < 24: # 11p - 12a, time for bed!
-        print("Super Novaaaaaa!")
+        # print("Super Novaaaaaa!")
         the_time_is_now(RED, is_it_friday) # super novaaaa
 
     # Bottom nova light indicates day of week
