@@ -12,7 +12,14 @@ except:
 NTP_DELTA = 2208988800
 
 # The NTP host can be configured at runtime by doing: ntptime.host = 'myhost.org'
-host = "pool.ntp.org"
+# Area          HostName
+# Worldwide     pool.ntp.org
+# Asia          asia.pool.ntp.org
+# Europe	    europe.pool.ntp.org
+# North America	north-america.pool.ntp.org
+# Oceania	    oceania.pool.ntp.org
+# South America south-america.pool.ntp.org
+host = "oceania.pool.ntp.org"
 
 
 def time():

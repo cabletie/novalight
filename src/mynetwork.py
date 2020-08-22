@@ -1,6 +1,6 @@
+import network
+import secrets
 def do_connect():
-    import network
-    import secrets
     sta_if = network.WLAN(network.STA_IF)
     if not sta_if.isconnected():
         print('connecting to network...')

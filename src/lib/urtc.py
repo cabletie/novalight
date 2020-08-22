@@ -56,11 +56,12 @@ class _BaseRTC:
         if datetime is None:
             self.i2c.readfrom_mem_into(self.address, self._DATETIME_REGISTER,
                                        buffer)
+            print("From the RTC in order: %x %x %x %x %x %x %x" % (buffer[6],buffer[5],buffer[4],buffer[3],buffer[2],buffer[1],buffer[0]))
             return datetime_tuple(
                 year=_bcd2bin(buffer[6]) + 2000,
                 month=_bcd2bin(buffer[5]),
-                day=_bcd2bin(buffer[4]),
-                weekday=_bcd2bin(buffer[3]),
+                day=_bcd2bin(buffer[3]),
+                weekday=_bcd2bin(buffer[4]),
                 hour=_bcd2bin(buffer[2]),
                 minute=_bcd2bin(buffer[1]),
                 second=_bcd2bin(buffer[0]),
@@ -69,10 +70,11 @@ class _BaseRTC:
         buffer[0] = _bin2bcd(datetime.second)
         buffer[1] = _bin2bcd(datetime.minute)
         buffer[2] = _bin2bcd(datetime.hour)
-        buffer[3] = _bin2bcd(datetime.weekday)
-        buffer[4] = _bin2bcd(datetime.day)
+        buffer[4] = _bin2bcd(datetime.weekday) 
+        buffer[3] = _bin2bcd(datetime.day)
         buffer[5] = _bin2bcd(datetime.month)
         buffer[6] = _bin2bcd(datetime.year - 2000)
+        print("Setting RTC in order: %x %x %x %x %x %x %x" % (buffer[6],buffer[5],buffer[4],buffer[3],buffer[2],buffer[1],buffer[0]))
         self._register(self._DATETIME_REGISTER, buffer)
 
     def alarm_time(self, datetime=None):

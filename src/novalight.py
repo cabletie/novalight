@@ -7,10 +7,11 @@ import lib.ntptime
 
 # import adafruit_pcf8523
 # https://docs.micropython.org/en/latest/library/time.html
-try:
-    import utime as time
-except ImportError:
-    import time
+# try:
+#     import utime as time
+# except ImportError:
+#     import time
+import utime
 import mynetwork
 
 # LoBo Neopixel doco is at https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo/wiki/neopixel
@@ -74,25 +75,28 @@ bottom_nova.show()
 
 myI2C = machine.I2C(sda=machine.Pin(21), scl=machine.Pin(22))
 rtc = lib.urtc.PCF8523(myI2C)
+# australia/melbourne
+TZ = +10
+TZ_SECONDS = TZ * 60 * 60
 is_it_friday = True
-days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","Error")
 
 # Connect to network to get NTP time
 mynetwork.do_connect()
 
 if True:   # change to True if you want to write the time!
     t = lib.ntptime.time() # Get the time from the NTP server as seconds since epoch
-    #                     year, mon, date, hour, wday, min, sec, msec
-    # t = lib.urtc.datetime_tuple(year=2020, month=8, day=17, weekday=1, hour=11, minute=1, second=50, millisecond=0)
-    # you must set year, mon, date, hour, min, sec and weekday
-    # yearday is not supported, isdst can be set but we don't do anything with it at this time
-    tm = time.localtime(t)
+    # Adjust for timezone (yes, we store localtime on the RTC ...)
+    t += TZ_SECONDS
+    # And convert to tuple
+    tm = utime.localtime(t)
 
-    print("Setting time to: ", tm, t)     # uncomment for debugging
-    print(tm[0], tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0)
-    rtc.datetime((tm[0], tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0))
-    # rtc.datetime(tm)
-    print()
+    # uncomment for debugging
+    print("year, mon, date, hour, min, sec,  wday, doy")
+    print("NTP Time converted by utime.localtime(): ", tm, t)
+    # Adjust for day of week from 1-7 to 0-6
+    print("Write to RTC in this order: ", tm[0], tm[1], tm[2], tm[6]-1, tm[3], tm[4], tm[5], 0)
+    rtc.datetime((tm[0], tm[1], tm[2], tm[6]-1, tm[3], tm[4], tm[5], 0))
 
 
 def solid(light_unit, length, color):
@@ -103,23 +107,23 @@ def breathe(light_unit, length, color):
     print("breathing on",color)
     for i in range(length):
         light_unit.set(i+1, color, update=False)
-        time.sleep(.07)
+        utime.sleep(.07)
         light_unit.show()
 
-    time.sleep(1)
+    utime.sleep(1)
 
     print("breathing off",OFF)
     for i in range(length):
         light_unit.set(i+1, OFF, update=False)
-        time.sleep(.07)
+        utime.sleep(.07)
         light_unit.show()
 
 def color_chase(light_unit, light_len, color, wait):
     for i in range(light_len):
         light_unit.set(i+1, color)
-        time.sleep(wait)
+        utime.sleep(wait)
         light_unit.show()
-    time.sleep(0.5)
+    utime.sleep(0.5)
 
 # BLACK, WHITE, RED, LIME, BLUE, YELLOW, CYAN, MAGENTA, SILVER, GRAY, MAROON, OLIVE, GREEN, PURPLE, TEAL, NAVY
 def rainbow_chase(light_unit, length, wait):
@@ -162,17 +166,26 @@ def friday_feels():
     what_even_is_time(bottom_nova, top_nova, BOTTOM_NOVA_LEN, wait)
 
 while True:
-    t = rtc.datetime()
-    if t.weekday == 5:
+    # Get time from our RTC
+    tm = rtc.datetime()
+
+    # Uncomment for debugging    
+    print("Year: ",tm.year)
+    print("Month:", tm.month)
+    print("Day:", tm.day)
+    print("Weekday:", tm.weekday)
+    print("Hour:", tm.hour)
+    print("Minute:", tm.minute)
+    print("Second:", tm.second)
+    if tm.weekday == 5:
         is_it_friday = True
     else:
         is_it_friday = False
-    # print(t)     # uncomment for debugging
 
-    print("The date is %s %d/%d/%d" % (days[t.weekday], t.day, t.month, t.year))
-    print("The time is %d:%02d:%02d" % (t.hour, t.minute, t.second))
+    print("The date is %s %d/%d/%d" % (days[tm.weekday], tm.day, tm.month, tm.year))
+    print("The time is %d:%02d:%02d" % (tm.hour, tm.minute, tm.second))
 
-    if t.hour >= 0 and t.hour < 7: # 12a to 7a, you should be sleeping
+    if tm.hour >= 0 and tm.hour < 7: # 12a to 7a, you should be sleeping
         star_frag.clear()
         star_frag.show()
         top_nova.clear()
@@ -182,34 +195,34 @@ while True:
         continue
 
     # Top nova light indicates time span
-    if t.minute == 0 and (t.second >= 0 and t.second < 10): # top of the hour party cuckoo rainbow
+    if tm.minute == 0 and (tm.second >= 0 and tm.second < 10): # top of the hour party cuckoo rainbow
         rainbow_chase(top_nova, TOP_NOVA_LEN, 0.1)
         rainbow_chase(top_nova, TOP_NOVA_LEN, 0.1)
 
-    if t.hour >= 0 and t.hour < 7: # 12a to 7a, you should be sleeping
+    if tm.hour >= 0 and tm.hour < 7: # 12a to 7a, you should be sleeping
         the_time_is_now(OFF, is_it_friday)
-    elif t.hour >= 7 and t.hour < 12: # 7a to 12p rise and shine! it's morning!
+    elif tm.hour >= 7 and tm.hour < 12: # 7a to 12p rise and shine! it's morning!
         the_time_is_now(WHITE, is_it_friday) # newborn nova
-    elif t.hour >= 12 and t.hour < 15: # 12p to 3p, middle of the day burns bright
+    elif tm.hour >= 12 and tm.hour < 15: # 12p to 3p, middle of the day burns bright
         the_time_is_now(CYAN, is_it_friday)
-    elif t.hour >= 15 and t.hour < 18: # 3p to 6p, back to whatever you were doing
+    elif tm.hour >= 15 and tm.hour < 18: # 3p to 6p, back to whatever you were doing
         the_time_is_now(YELLOW, is_it_friday)
-    elif t.hour >= 18 and t.hour < 23: # 6p to 11p, night time calm
+    elif tm.hour >= 18 and tm.hour < 23: # 6p to 11p, night time calm
         the_time_is_now(ORANGE, is_it_friday)
-    elif t.hour >= 23 and t.hour < 24: # 11p - 12a, time for bed!
+    elif tm.hour >= 23 and tm.hour < 24: # 11p - 12a, time for bed!
         # print("Super Novaaaaaa!")
         the_time_is_now(RED, is_it_friday) # super novaaaa
 
     # Bottom nova light indicates day of week
-    if days[t.weekday] == "Sunday" or days[t.weekday] == "Saturday":
+    if days[tm.weekday] == "Sunday" or days[tm.weekday] == "Saturday":
         it_feels_like(WHITE)
         is_it_friday = False
-    elif days[t.weekday] == "Monday":
+    elif days[tm.weekday] == "Monday":
         it_feels_like(BLUE)
-    elif days[t.weekday] == "Tuesday":
+    elif days[tm.weekday] == "Tuesday":
         it_feels_like(CYAN)
-    elif days[t.weekday] == "Wednesday" or days[t.weekday] == "Thursday":
+    elif days[tm.weekday] == "Wednesday" or days[tm.weekday] == "Thursday":
         it_feels_like(PINK)
-    elif days[t.weekday] == "Friday":
+    elif days[tm.weekday] == "Friday":
         is_it_friday = True
         friday_feels()
