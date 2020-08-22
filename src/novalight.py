@@ -91,11 +91,11 @@ if True:   # change to True if you want to write the time!
     # And convert to tuple
     tm = utime.localtime(t)
 
-    # uncomment for debugging
-    print("year, mon, date, hour, min, sec,  wday, doy")
-    print("NTP Time converted by utime.localtime(): ", tm, t)
-    # Adjust for day of week from 1-7 to 0-6
-    print("Write to RTC in this order: ", tm[0], tm[1], tm[2], tm[6]-1, tm[3], tm[4], tm[5], 0)
+    ## uncomment for debugging
+    # print("year, mon, date, hour, min, sec,  wday, doy")
+    # print("NTP Time converted by utime.localtime(): ", tm, t)
+    ## Adjust for day of week from 1-7 to 0-6
+    # print("Write to RTC in this order: ", tm[0], tm[1], tm[2], tm[6]-1, tm[3], tm[4], tm[5], 0)
     rtc.datetime((tm[0], tm[1], tm[2], tm[6]-1, tm[3], tm[4], tm[5], 0))
 
 
@@ -169,14 +169,14 @@ while True:
     # Get time from our RTC
     tm = rtc.datetime()
 
-    # Uncomment for debugging    
-    print("Year: ",tm.year)
-    print("Month:", tm.month)
-    print("Day:", tm.day)
-    print("Weekday:", tm.weekday)
-    print("Hour:", tm.hour)
-    print("Minute:", tm.minute)
-    print("Second:", tm.second)
+    ## Uncomment for debugging    
+    # print("Year: ",tm.year)
+    # print("Month:", tm.month)
+    # print("Day:", tm.day)
+    # print("Weekday:", tm.weekday)
+    # print("Hour:", tm.hour)
+    # print("Minute:", tm.minute)
+    # print("Second:", tm.second)
     if tm.weekday == 5:
         is_it_friday = True
     else:
@@ -210,7 +210,6 @@ while True:
     elif tm.hour >= 18 and tm.hour < 23: # 6p to 11p, night time calm
         the_time_is_now(ORANGE, is_it_friday)
     elif tm.hour >= 23 and tm.hour < 24: # 11p - 12a, time for bed!
-        # print("Super Novaaaaaa!")
         the_time_is_now(RED, is_it_friday) # super novaaaa
 
     # Bottom nova light indicates day of week
