@@ -79,7 +79,7 @@ rtc = lib.urtc.PCF8523(myI2C)
 TZ = +10
 TZ_SECONDS = TZ * 60 * 60
 is_it_friday = True
-days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday","Error")
+days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Error")
 
 # Connect to network to get NTP time
 mynetwork.do_connect()
