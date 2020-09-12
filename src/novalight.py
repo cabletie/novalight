@@ -4,6 +4,7 @@ import random
 import machine
 import lib.urtc
 import lib.ntptime
+import math
 
 # import adafruit_pcf8523
 # https://docs.micropython.org/en/latest/library/time.html
@@ -33,6 +34,9 @@ import mynetwork
 def pack(color):
     return color[0]<<16 | color[1]<<8 | color[2]
 
+def unpack(color):
+    return color & 0xff,(color>>8 & 0xff),(color >> 16 & 0xff)
+
 OFF = pack((0, 0, 0))
 ORANGE = pack((155, 50, 0))
 PINK = pack((231, 84, 128))
@@ -60,10 +64,9 @@ STAR_FRAG_LEN = 7
 TOP_NOVA_LEN = 16
 BOTTOM_NOVA_LEN = 16
 
-brightness_val = 0.7
 star_frag = machine.Neopixel(machine.Pin(27), STAR_FRAG_LEN, type=machine.Neopixel.TYPE_RGBW)
 top_nova = machine.Neopixel(machine.Pin(25), TOP_NOVA_LEN, type=machine.Neopixel.TYPE_RGB)
-bottom_nova = machine.Neopixel(machine.Pin(2), BOTTOM_NOVA_LEN, type=machine.Neopixel.TYPE_RGB)
+bottom_nova = machine.Neopixel(machine.Pin(26), BOTTOM_NOVA_LEN, type=machine.Neopixel.TYPE_RGB)
 
 # Start with eveything turned off
 star_frag.clear()
@@ -73,8 +76,8 @@ top_nova.show()
 bottom_nova.clear()
 bottom_nova.show()
 
-myI2C = machine.I2C(sda=machine.Pin(21), scl=machine.Pin(22))
-rtc = lib.urtc.PCF8523(myI2C)
+# myI2C = machine.I2C(sda=machine.Pin(21), scl=machine.Pin(22))
+# rtc = lib.urtc.PCF8523(myI2C)
 # australia/melbourne
 TZ = +10
 TZ_SECONDS = TZ * 60 * 60
@@ -82,9 +85,12 @@ is_it_friday = True
 days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Error")
 
 # Connect to network to get NTP time
-mynetwork.do_connect()
+# mynetwork.do_connect()
+if True:
+    rtc = machine.RTC()
+    rtc.ntp_sync(server="pool.ntp.org", tz="AEST-1AEDT")
 
-if True:   # change to True if you want to write the time!
+if False:   # change to True if you want to write the time!
     t = lib.ntptime.time() # Get the time from the NTP server as seconds since epoch
     # Adjust for timezone (yes, we store localtime on the RTC ...)
     t += TZ_SECONDS
@@ -104,19 +110,23 @@ def solid(light_unit, length, color):
         light_unit.set(i+1, color)
 
 def breathe(light_unit, length, color):
-    print("breathing on",color)
-    for i in range(length):
-        light_unit.set(i+1, color, update=False)
-        utime.sleep(.07)
-        light_unit.show()
+    smoothness_pts = 256 # larger=slower change in brightness  
+    gamma = 0.11 # affects the width of peak (more or less darkness)
+    beta = 0.5 # shifts the gaussian to be symmetric
+    color_arr = unpack(color)
 
-    utime.sleep(1)
+    for ii in range(smoothness_pts):
+        # Linear
+        # brightness_val = 1.0 - math.fabs((2.0*(ii/smoothness_pts)) - 1.0)
+        # Circular
+        # brightness_val = math.sqrt(1.0 -  math.pow(math.fabs((2.0*(ii/smoothness_pts))-1.0),2.0))
+        # Gaussian
+        brightness_val = (math.exp(-(math.pow(((ii/smoothness_pts)-beta)/gamma,2.0))/2.0))
 
-    print("breathing off",OFF)
-    for i in range(length):
-        light_unit.set(i+1, OFF, update=False)
-        utime.sleep(.07)
-        light_unit.show()
+        multiplied_val = [int(element * brightness_val) for element in color_arr]
+        light_unit.set(1, pack(multiplied_val), num=STAR_FRAG_LEN)
+        utime.sleep(.02)
+        # light_unit.show()
 
 def color_chase(light_unit, light_len, color, wait):
     for i in range(light_len):
@@ -165,11 +175,20 @@ def friday_feels():
     wait = 0.05
     what_even_is_time(bottom_nova, top_nova, BOTTOM_NOVA_LEN, wait)
 
+import ucollections
+
+DateTimeTuple = ucollections.namedtuple("DateTimeTuple", ["year", "month",
+    "day", "hour", "minute", "second", "weekday", "doy"])
+
+def datetime_tuple(year, month, day, hour=0, minute=0,
+                   second=0, weekday=0, doy=0):
+    return DateTimeTuple(year, month, day, hour, minute,
+                         second, weekday-1, doy)
 while True:
     # Get time from our RTC
-    tm = rtc.datetime()
+    tm = datetime_tuple(*utime.localtime())
 
-    ## Uncomment for debugging    
+    ## Uncomment for debugging
     # print("Year: ",tm.year)
     # print("Month:", tm.month)
     # print("Day:", tm.day)
@@ -185,14 +204,14 @@ while True:
     print("The date is %s %d/%d/%d" % (days[tm.weekday], tm.day, tm.month, tm.year))
     print("The time is %d:%02d:%02d" % (tm.hour, tm.minute, tm.second))
 
-    if tm.hour >= 0 and tm.hour < 7: # 12a to 7a, you should be sleeping
-        star_frag.clear()
-        star_frag.show()
-        top_nova.clear()
-        top_nova.show()
-        bottom_nova.clear()
-        bottom_nova.show()
-        continue
+    # if tm.hour >= 0 and tm.hour < 7: # 12a to 7a, you should be sleeping
+    #     star_frag.clear()
+    #     star_frag.show()
+    #     top_nova.clear()
+    #     top_nova.show()
+    #     bottom_nova.clear()
+    #     bottom_nova.show()
+    #     continue
 
     # Top nova light indicates time span
     if tm.minute == 0 and (tm.second >= 0 and tm.second < 10): # top of the hour party cuckoo rainbow
