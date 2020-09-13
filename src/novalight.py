@@ -88,7 +88,7 @@ days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Satur
 # mynetwork.do_connect()
 if True:
     rtc = machine.RTC()
-    rtc.ntp_sync(server="pool.ntp.org", tz="AEST-1AEDT")
+    rtc.ntp_sync(server="pool.ntp.org", tz="AEST-10AEDT,M10.1.0,M4.1.0/3")
 
 if False:   # change to True if you want to write the time!
     t = lib.ntptime.time() # Get the time from the NTP server as seconds since epoch
@@ -164,8 +164,6 @@ def the_time_is_now(color, friday):
     if not friday:
         breathe(star_frag, STAR_FRAG_LEN, WHITE)
         top_nova.set(1, color, num=TOP_NOVA_LEN)
-        # top_nova.fill(color)
-        # top_nova.show()
 
 def it_feels_like(color):
     bottom_nova.set(1, color, num=BOTTOM_NOVA_LEN)
@@ -189,13 +187,13 @@ while True:
     tm = datetime_tuple(*utime.localtime())
 
     ## Uncomment for debugging
-    # print("Year: ",tm.year)
-    # print("Month:", tm.month)
-    # print("Day:", tm.day)
-    # print("Weekday:", tm.weekday)
-    # print("Hour:", tm.hour)
-    # print("Minute:", tm.minute)
-    # print("Second:", tm.second)
+    print("Year: ",tm.year)
+    print("Month:", tm.month)
+    print("Day:", tm.day)
+    print("Weekday:", tm.weekday)
+    print("Hour:", tm.hour)
+    print("Minute:", tm.minute)
+    print("Second:", tm.second)
     if tm.weekday == 5:
         is_it_friday = True
     else:
@@ -204,14 +202,14 @@ while True:
     print("The date is %s %d/%d/%d" % (days[tm.weekday], tm.day, tm.month, tm.year))
     print("The time is %d:%02d:%02d" % (tm.hour, tm.minute, tm.second))
 
-    # if tm.hour >= 0 and tm.hour < 7: # 12a to 7a, you should be sleeping
-    #     star_frag.clear()
-    #     star_frag.show()
-    #     top_nova.clear()
-    #     top_nova.show()
-    #     bottom_nova.clear()
-    #     bottom_nova.show()
-    #     continue
+    if tm.hour >= 0 and tm.hour < 7: # 12a to 7a, you should be sleeping
+        star_frag.clear()
+        star_frag.show()
+        top_nova.clear()
+        top_nova.show()
+        bottom_nova.clear()
+        bottom_nova.show()
+        continue
 
     # Top nova light indicates time span
     if tm.minute == 0 and (tm.second >= 0 and tm.second < 10): # top of the hour party cuckoo rainbow
