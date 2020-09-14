@@ -187,13 +187,13 @@ while True:
     tm = datetime_tuple(*utime.localtime())
 
     ## Uncomment for debugging
-    print("Year: ",tm.year)
-    print("Month:", tm.month)
-    print("Day:", tm.day)
-    print("Weekday:", tm.weekday)
-    print("Hour:", tm.hour)
-    print("Minute:", tm.minute)
-    print("Second:", tm.second)
+    # print("Year: ",tm.year)
+    # print("Month:", tm.month)
+    # print("Day:", tm.day)
+    # print("Weekday:", tm.weekday)
+    # print("Hour:", tm.hour)
+    # print("Minute:", tm.minute)
+    # print("Second:", tm.second)
     if tm.weekday == 5:
         is_it_friday = True
     else:
