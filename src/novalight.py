@@ -1,8 +1,8 @@
 # Novalight ported to LoBo MicroPython by @cabletie
 # main.py
 import random
-from machine import Pin
-from machine import NeoPixel
+from machine import Pin, I2C
+from neopixel import NeoPixel
 # import machine
 import lib.urtc
 import lib.ntptime
@@ -64,8 +64,8 @@ BOTTOM_NOVA_LEN = 16
 
 brightness_val = 0.7
 pin27 = Pin(27, Pin.OUT) 
-pin25 = Pin(27, Pin.OUT) 
-pin26 = Pin(27, Pin.OUT) 
+pin25 = Pin(25, Pin.OUT) 
+pin26 = Pin(26, Pin.OUT) 
 star_frag = NeoPixel(pin27, STAR_FRAG_LEN)
 top_nova = NeoPixel(pin25, TOP_NOVA_LEN)
 bottom_nova = NeoPixel(pin26, BOTTOM_NOVA_LEN)
@@ -78,7 +78,8 @@ top_nova.show()
 bottom_nova.clear()
 bottom_nova.show()
 
-myI2C = machine.I2C(sda=machine.Pin(21), scl=machine.Pin(22))
+myI2C = I2C(1, scl=Pin(22), sda=Pin(21), freq=400000)
+# myI2C = I2C(sda=Pin(21), scl=Pin(22))
 rtc = lib.urtc.PCF8523(myI2C)
 # australia/melbourne
 TZ = +10
