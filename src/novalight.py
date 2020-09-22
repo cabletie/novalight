@@ -1,7 +1,9 @@
 # Novalight ported to LoBo MicroPython by @cabletie
 # main.py
 import random
-import machine
+from machine import Pin
+from machine import NeoPixel
+# import machine
 import lib.urtc
 import lib.ntptime
 
@@ -17,41 +19,41 @@ import mynetwork
 # LoBo Neopixel doco is at https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo/wiki/neopixel
 
 # COLORS
-# OFF = (0, 0, 0)
-# WHITE = (0, 0, 0, 255)
-# WHITE_RGB = (100, 100, 100)
+OFF = (0, 0, 0)
+WHITE = (0, 0, 0, 255)
+WHITE_RGB = (100, 100, 100)
 
-# RED = (100, 5, 5)
-# BLUE = (0, 0, 100)
-# GREEN = (50, 150, 50)
-# PURPLE = (180,50,180)
-# ORANGE = (155, 50, 0)
-# YELLOW = (200, 150, 0)
-# CYAN = (0, 100, 100)
-# PINK = (231,84,128)
+RED = (100, 5, 5)
+BLUE = (0, 0, 100)
+GREEN = (50, 150, 50)
+PURPLE = (180,50,180)
+ORANGE = (155, 50, 0)
+YELLOW = (200, 150, 0)
+CYAN = (0, 100, 100)
+PINK = (231,84,128)
 
 def pack(color):
     return color[0]<<16 | color[1]<<8 | color[2]
 
-OFF = pack((0, 0, 0))
-ORANGE = pack((155, 50, 0))
-PINK = pack((231, 84, 128))
-PURPLE = machine.Neopixel.PURPLE
-GREEN = machine.Neopixel.GREEN
-YELLOW = machine.Neopixel.YELLOW
-CYAN = machine.Neopixel.CYAN
-WHITE = machine.Neopixel.WHITE
-BLACK = machine.Neopixel.BLACK
-RED = machine.Neopixel.RED
-LIME = machine.Neopixel.LIME
-BLUE = machine.Neopixel.BLUE
-MAGENTA = machine.Neopixel.MAGENTA
-SILVER = machine.Neopixel.SILVER
-GRAY = machine.Neopixel.GRAY
-MAROON = machine.Neopixel.MAROON
-OLIVE = machine.Neopixel.OLIVE
-TEAL = machine.Neopixel.TEAL
-NAVY = machine.Neopixel.NAVY
+# OFF = pack((0, 0, 0))
+# ORANGE = pack((155, 50, 0))
+# PINK = pack((231, 84, 128))
+# PURPLE = machine.Neopixel.PURPLE
+# GREEN = machine.Neopixel.GREEN
+# YELLOW = machine.Neopixel.YELLOW
+# CYAN = machine.Neopixel.CYAN
+# WHITE = machine.Neopixel.WHITE
+# BLACK = machine.Neopixel.BLACK
+# RED = machine.Neopixel.RED
+# LIME = machine.Neopixel.LIME
+# BLUE = machine.Neopixel.BLUE
+# MAGENTA = machine.Neopixel.MAGENTA
+# SILVER = machine.Neopixel.SILVER
+# GRAY = machine.Neopixel.GRAY
+# MAROON = machine.Neopixel.MAROON
+# OLIVE = machine.Neopixel.OLIVE
+# TEAL = machine.Neopixel.TEAL
+# NAVY = machine.Neopixel.NAVY
 
 color_array = [GREEN, PURPLE, ORANGE, YELLOW, CYAN, PINK, OFF, WHITE]
 
@@ -61,9 +63,12 @@ TOP_NOVA_LEN = 16
 BOTTOM_NOVA_LEN = 16
 
 brightness_val = 0.7
-star_frag = machine.Neopixel(machine.Pin(27), STAR_FRAG_LEN, type=machine.Neopixel.TYPE_RGBW)
-top_nova = machine.Neopixel(machine.Pin(25), TOP_NOVA_LEN, type=machine.Neopixel.TYPE_RGB)
-bottom_nova = machine.Neopixel(machine.Pin(2), BOTTOM_NOVA_LEN, type=machine.Neopixel.TYPE_RGB)
+pin27 = Pin(27, Pin.OUT) 
+pin25 = Pin(27, Pin.OUT) 
+pin26 = Pin(27, Pin.OUT) 
+star_frag = NeoPixel(pin27, STAR_FRAG_LEN)
+top_nova = NeoPixel(pin25, TOP_NOVA_LEN)
+bottom_nova = NeoPixel(pin26, BOTTOM_NOVA_LEN)
 
 # Start with eveything turned off
 star_frag.clear()

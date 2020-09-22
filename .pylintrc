@@ -1,6 +1,6 @@
 [MASTER]
 # Loaded Stubs:  esp32_LoBo-esp32_LoBo-3.2.24 
-init-hook='import sys;sys.path.insert(1, ".micropy/BradenM-micropy-stubs-6a1f50d/frozen");sys.path.insert(1, ".micropy/BradenM-micropy-stubs-c2ec306/frozen");sys.path.insert(1, ".micropy/BradenM-micropy-stubs-6a1f50d/stubs");sys.path.insert(1, ".micropy/novalight");'
+init-hook='import sys;sys.path.insert(1, ".micropy/BradenM-micropy-stubs-9569403/frozen");sys.path.insert(1, ".micropy/BradenM-micropy-stubs-27ee48a/frozen");sys.path.insert(1, ".micropy/BradenM-micropy-stubs-9569403/stubs");sys.path.insert(1, ".micropy/novalight");'
 
 [MESSAGES CONTROL]
 # Only show warnings with the listed confidence levels. Leave empty to show
@@ -18,5 +18,7 @@ confidence=
 # --disable=W".
 
 disable = missing-docstring, line-too-long, trailing-newlines, broad-except, logging-format-interpolation, invalid-name, empty-docstring,
+        no-method-argument, assignment-from-no-return, too-many-function-args, unexpected-keyword-arg
+        # the 2nd  line deals with the limited information in the generated stubs., empty-docstring,
         no-method-argument, assignment-from-no-return, too-many-function-args, unexpected-keyword-arg
         # the 2nd  line deals with the limited information in the generated stubs.
