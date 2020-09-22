@@ -19,6 +19,12 @@
         ".micropy/BradenM-micropy-stubs-6a1f50d/stubs",
         ".micropy/novalight"
     ],
+    "python.analysis.extraPaths": [
+        ".micropy/BradenM-micropy-stubs-6a1f50d/frozen",
+        ".micropy/BradenM-micropy-stubs-c2ec306/frozen",
+        ".micropy/BradenM-micropy-stubs-6a1f50d/stubs",
+        ".micropy/novalight"
+    ],
     "python.linting.pylintEnabled": true,
     "python.languageServer": "Microsoft",
     "python.formatting.provider": "black"

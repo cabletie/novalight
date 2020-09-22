@@ -1,10 +1,10 @@
 # Novalight ported to LoBo MicroPython by @cabletie
 # main.py
 import random
+import math
 import machine
 import lib.urtc
 import lib.ntptime
-import math
 
 # import adafruit_pcf8523
 # https://docs.micropython.org/en/latest/library/time.html
@@ -13,7 +13,6 @@ import math
 # except ImportError:
 #     import time
 import utime
-import mynetwork
 
 # LoBo Neopixel doco is at https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo/wiki/neopixel
 
@@ -67,6 +66,7 @@ BOTTOM_NOVA_LEN = 16
 star_frag = machine.Neopixel(machine.Pin(27), STAR_FRAG_LEN, type=machine.Neopixel.TYPE_RGBW)
 top_nova = machine.Neopixel(machine.Pin(25), TOP_NOVA_LEN, type=machine.Neopixel.TYPE_RGB)
 bottom_nova = machine.Neopixel(machine.Pin(26), BOTTOM_NOVA_LEN, type=machine.Neopixel.TYPE_RGB)
+breathe_en = False
 
 # Start with eveything turned off
 star_frag.clear()
@@ -88,7 +88,7 @@ days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Satur
 # mynetwork.do_connect()
 if True:
     rtc = machine.RTC()
-    rtc.ntp_sync(server="pool.ntp.org", tz="AEST-10AEDT,M10.1.0,M4.1.0/3")
+    rtc.ntp_sync(server="pool.ntp.org", tz="AEST+10AEDT,M10.1.0,M4.1.0/3")
 
 if False:   # change to True if you want to write the time!
     t = lib.ntptime.time() # Get the time from the NTP server as seconds since epoch
@@ -104,15 +104,39 @@ if False:   # change to True if you want to write the time!
     # print("Write to RTC in this order: ", tm[0], tm[1], tm[2], tm[6]-1, tm[3], tm[4], tm[5], 0)
     rtc.datetime((tm[0], tm[1], tm[2], tm[6]-1, tm[3], tm[4], tm[5], 0))
 
+ii = 0
+smoothness_pts = 256 # larger=slower change in brightness
+gamma = 0.11 # affects the width of peak (more or less darkness)
+beta = 0.5 # shifts the gaussian to be symmetric
+color_arr = unpack(WHITE)
+
+def breathecb(timer):
+    global ii, smoothness_pts, gamma, beta, color_arr, breathe_en, star_frag
+
+    if not breathe_en:
+        return
+
+    # Gaussian
+    brightness_val = (math.exp(-(math.pow(((ii/smoothness_pts)-beta)/gamma,2.0))/2.0))
+
+    multiplied_val = [int(element * brightness_val) for element in color_arr]
+    star_frag.set(1, pack(multiplied_val), num=STAR_FRAG_LEN)
+    if ii >= smoothness_pts:
+        ii = 0
+    else:
+        ii += 1
+
+tme0 = machine.Timer(0)
+# tme0.init(period=20, mode=tme0.PERIODIC, callback=breathecb)
 
 def solid(light_unit, length, color):
     for i in range(length):
         light_unit.set(i+1, color)
 
 def breathe(light_unit, length, color):
-    smoothness_pts = 256 # larger=slower change in brightness  
-    gamma = 0.11 # affects the width of peak (more or less darkness)
-    beta = 0.5 # shifts the gaussian to be symmetric
+    global smoothness_pts# larger=slower change in brightness  
+    global gamma # affects the width of peak (more or less darkness)
+    global beta # shifts the gaussian to be symmetric
     color_arr = unpack(color)
 
     for ii in range(smoothness_pts):
@@ -124,7 +148,7 @@ def breathe(light_unit, length, color):
         brightness_val = (math.exp(-(math.pow(((ii/smoothness_pts)-beta)/gamma,2.0))/2.0))
 
         multiplied_val = [int(element * brightness_val) for element in color_arr]
-        light_unit.set(1, pack(multiplied_val), num=STAR_FRAG_LEN)
+        light_unit.set(1, pack(multiplied_val), num=length)
         utime.sleep(.02)
         # light_unit.show()
 
@@ -162,7 +186,7 @@ def what_even_is_time(light_one, light_two, light_len, wait):
 
 def the_time_is_now(color, friday):
     if not friday:
-        breathe(star_frag, STAR_FRAG_LEN, WHITE)
+        # breathe(star_frag, STAR_FRAG_LEN, WHITE)
         top_nova.set(1, color, num=TOP_NOVA_LEN)
 
 def it_feels_like(color):
@@ -182,7 +206,14 @@ def datetime_tuple(year, month, day, hour=0, minute=0,
                    second=0, weekday=0, doy=0):
     return DateTimeTuple(year, month, day, hour, minute,
                          second, weekday-1, doy)
+
+# machine.WDT(True)
+
 while True:
+
+    # Feed the watchdog
+    # machine.resetWDT()
+
     # Get time from our RTC
     tm = datetime_tuple(*utime.localtime())
 
