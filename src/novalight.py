@@ -89,9 +89,9 @@ allOff()
 # Setup I2C for talking to the HW RTC chip
 myI2C = I2C(1, scl=Pin(22), sda=Pin(21), freq=400000)
 hw_clock = urtc.PCF8523(myI2C)
-rtc = RTC.init(2020,1,1,0,0,0,0,)
 TZ = +10
 TZ_SECONDS = TZ * 60 * 60
+rtc = RTC.init(2020,1,1,0,0,0,0)
 is_it_friday = True
 days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Error")
 
@@ -116,7 +116,7 @@ if True:   # change to True if you want to write the time!
     # Set machine.RTC and hw rtc to NTP time if available
     if net_if.isconnected():
         ntptime.settime()
-
+        tm = rtc.datetime()
         hw_clock.datetime((tm[0]-30, tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0))
     else
         # Get time from hw rtc
