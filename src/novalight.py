@@ -154,6 +154,25 @@ def breathe(light_unit, color):
         utime.sleep(.07)
         light_unit.write()
 
+def breathe2(light_unit, color):
+    global smoothness_pts# larger=slower change in brightness  
+    global gamma # affects the width of peak (more or less darkness)
+    global beta # shifts the gaussian to be symmetric
+    color_arr = color
+
+    for ii in range(smoothness_pts):
+        # Linear
+        # brightness_val = 1.0 - math.fabs((2.0*(ii/smoothness_pts)) - 1.0)
+        # Circular
+        # brightness_val = math.sqrt(1.0 -  math.pow(math.fabs((2.0*(ii/smoothness_pts))-1.0),2.0))
+        # Gaussian
+        brightness_val = (math.exp(-(math.pow(((ii/smoothness_pts)-beta)/gamma,2.0))/2.0))
+
+        multiplied_val = [int(element * brightness_val) for element in color_arr]
+        light_unit.fill(multiplied_val)
+        utime.sleep(.02)
+        light_unit.write()
+
 def color_chase(light_unit, color, wait):
     for i in range(light_unit.n):
         light_unit[i] = color
