@@ -6,11 +6,8 @@
     "dev-packages": {
         "micropy-cli": "*"
     },
-    "packages": {
-        "urtc": "*"
-    },
+    "packages": {},
     "config": {
-        "vscode": true,
-        "pylint": true
+        "vscode": true
     }
 }

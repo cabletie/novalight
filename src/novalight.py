@@ -1,15 +1,15 @@
 # Novalight ported to LoBo MicroPython by @cabletie
 # main.py
 import random
+import secrets
 from machine import Pin, I2C, RTC
 # from machine import neopixel
 import neopixel as np
 # import machine
-import lib.urtc
+import lib.urtc as urtc
 # import lib.ntptime
 import ntptime
 import network
-import secrets
 import utime
 
 # import adafruit_pcf8523
@@ -91,9 +91,10 @@ myI2C = I2C(1, scl=Pin(22), sda=Pin(21), freq=400000)
 hw_clock = urtc.PCF8523(myI2C)
 TZ = +10
 TZ_SECONDS = TZ * 60 * 60
-rtc = RTC.init(2020,1,1,0,0,0,0)
+rtc = RTC()
+# rtc = RTC.init(2020,1,1,0,0,0,0)
 is_it_friday = True
-days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Error")
+days = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "Error")
 
 # Connect to network to get NTP time
 def do_connect():
@@ -103,10 +104,10 @@ def do_connect():
         sta_if.active(True)
         sta_if.connect(secrets.SSID, secrets.PW)
         timeout = 0
-        while not sta_if.isconnected() & timeout < 50:
+        while not sta_if.isconnected() & timeout < 100:
             utime.sleep(0.1)
             timeout += 1
-            pass
+        print('timeout:',timeout)
         print('network config:', sta_if.ifconfig())
     return sta_if
 
@@ -115,12 +116,17 @@ net_if = do_connect()
 if True:   # change to True if you want to write the time!
     # Set machine.RTC and hw rtc to NTP time if available
     if net_if.isconnected():
-        ntptime.settime()
+        print("Getting time from NTP server")
+        # todo: get time in seconds, add TZ offset, convert back to tuple and use that to set rtc.datetime
+        t = ntptime.time()+TZ_SECONDS
         tm = rtc.datetime()
-        hw_clock.datetime((tm[0]-30, tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0))
-    else
-        # Get time from hw rtc
-        hw_clock.datetime()
+        hw_clock.datetime(tm)
+    else:
+        # No netowrk, Get time from hw rtc
+        dtt = hw_clock.datetime()
+        # And set internal RTC
+        rtc.datetime((dtt.year, dtt.month, dtt.day, dtt.weekday, dtt.hour, dtt.minute, dtt.second, 0))
+    rtc.datetime()
     # t = lib.ntptime.time() # Get the time from the NTP server as seconds since epoch
     # Adjust for timezone (yes, we store localtime on the RTC ...)
     # t += TZ_SECONDS
@@ -128,10 +134,10 @@ if True:   # change to True if you want to write the time!
     # tm = utime.localtime(t)
 
     ## uncomment for debugging
-    print("year, mon, date, hour, min, sec,  wday, doy")
-    print("NTP Time converted by utime.localtime(): ", tm, t)
+    # print("year, mon, date, hour, min, sec,  wday, doy")
+    # print("NTP Time converted by utime.localtime(): ", tm, t)
     ## Adjust for day of week from 1-7 to 0-6
-    print("Write to RTC in this order: ", tm[0], tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0)
+    # print("Write to RTC in this order: ", tm[0], tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0)
     # rtc.datetime((tm[0]-30, tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0))
 
 
@@ -172,6 +178,23 @@ def breathe2(light_unit, color):
         light_unit.fill(multiplied_val)
         utime.sleep(.02)
         light_unit.write()
+
+def breathecb(timer):
+    global ii, smoothness_pts, gamma, beta, color_arr, breathe_en, star_frag
+
+    if not breathe_en:
+        return
+
+    # Gaussian
+    brightness_val = (math.exp(-(math.pow(((ii/smoothness_pts)-beta)/gamma,2.0))/2.0))
+
+    multiplied_val = [int(element * brightness_val) for element in color_arr]
+    star_frag.fill(multiplied_val)
+    star_frag.write()
+    if ii >= smoothness_pts:
+        ii = 0
+    else:
+        ii += 1
 
 def color_chase(light_unit, color, wait):
     for i in range(light_unit.n):
@@ -221,7 +244,8 @@ def friday_feels():
 
 while True:
     # Get time from our RTC
-    tm = rtc.datetime()
+    rdt = rtc.datetime()
+    tm = urtc.datetime_tuple(*rdt)
 
     ## Uncomment for debugging
     # print("Year: ",tm.year)
