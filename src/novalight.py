@@ -89,12 +89,17 @@ allOff()
 # Setup I2C for talking to the HW RTC chip
 myI2C = I2C(1, scl=Pin(22), sda=Pin(21), freq=400000)
 hw_clock = urtc.PCF8523(myI2C)
-TZ = +10
+TZ = +11
 TZ_SECONDS = TZ * 60 * 60
 rtc = RTC()
 # rtc = RTC.init(2020,1,1,0,0,0,0)
 is_it_friday = True
 days = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "Error")
+
+# Breathe stuff
+smoothness_pts = 256 # larger=slower change in brightness
+gamma = 0.11 # affects the width of peak (more or less darkness)
+beta = 0.5 # shifts the gaussian to be symmetric
 
 # Connect to network to get NTP time
 def do_connect():
@@ -104,11 +109,11 @@ def do_connect():
         sta_if.active(True)
         sta_if.connect(secrets.SSID, secrets.PW)
         timeout = 0
-        while not sta_if.isconnected() & timeout < 100:
+        while not sta_if.isconnected() and (timeout < 100):
             utime.sleep(0.1)
             timeout += 1
         print('timeout:',timeout)
-        print('network config:', sta_if.ifconfig())
+    print('network config:', sta_if.ifconfig())
     return sta_if
 
 net_if = do_connect()
@@ -119,14 +124,18 @@ if True:   # change to True if you want to write the time!
         print("Getting time from NTP server")
         # todo: get time in seconds, add TZ offset, convert back to tuple and use that to set rtc.datetime
         t = ntptime.time()+TZ_SECONDS
+        # (0 year, 1 month, 2 mday, 3 hour, 4 minute, 5 second, 6 weekday, 7 yearday)
+        utm = utime.localtime(t)
+        rtc.datetime((utm[0],utm[1],utm[2],utm[6],utm[3],utm[4],utm[5],0))
         tm = rtc.datetime()
         hw_clock.datetime(tm)
     else:
-        # No netowrk, Get time from hw rtc
+        # No network, Get time from hw rtc
         dtt = hw_clock.datetime()
         # And set internal RTC
+        print(dtt)
         rtc.datetime((dtt.year, dtt.month, dtt.day, dtt.weekday, dtt.hour, dtt.minute, dtt.second, 0))
-    rtc.datetime()
+    print(rtc.datetime())
     # t = lib.ntptime.time() # Get the time from the NTP server as seconds since epoch
     # Adjust for timezone (yes, we store localtime on the RTC ...)
     # t += TZ_SECONDS
@@ -230,7 +239,7 @@ def what_even_is_time(light_one, light_two, light_three, wait):
 
 def the_time_is_now(color, friday):
     if not friday:
-        breathe(star_frag, WHITE_RGBW)
+        breathe2(star_frag, WHITE_RGBW)
         solid(top_nova, color)
         top_nova.write()
 
