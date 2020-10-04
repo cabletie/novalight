@@ -1,4 +1,4 @@
-# Novalight ported to LoBo MicroPython by @cabletie
+# Novalight as modified by @cabletie
 # main.py
 import random
 import secrets
@@ -12,16 +12,8 @@ import ntptime
 import network
 import utime
 import math
-
-# import adafruit_pcf8523
-# https://docs.micropython.org/en/latest/library/time.html
-# try:
-#     import utime as time
-# except ImportError:
-#     import time
-# import mynetwork
-
-# LoBo Neopixel doco is at https://github.com/loboris/MicroPython_ESP32_psRAM_LoBo/wiki/neopixel
+import urequests as requests
+import json
 
 # COLORS
 OFF = (0, 0, 0)
@@ -39,26 +31,6 @@ PINK = (231, 84, 128)
 
 def pack(color):
     return color[0]<<16 | color[1]<<8 | color[2]
-
-# OFF = pack((0, 0, 0))
-# ORANGE = pack((155, 50, 0))
-# PINK = pack((231, 84, 128))
-# PURPLE = machine.Neopixel.PURPLE
-# GREEN = machine.Neopixel.GREEN
-# YELLOW = machine.Neopixel.YELLOW
-# CYAN = machine.Neopixel.CYAN
-# WHITE = machine.Neopixel.WHITE
-# BLACK = machine.Neopixel.BLACK
-# RED = machine.Neopixel.RED
-# LIME = machine.Neopixel.LIME
-# BLUE = machine.Neopixel.BLUE
-# MAGENTA = machine.Neopixel.MAGENTA
-# SILVER = machine.Neopixel.SILVER
-# GRAY = machine.Neopixel.GRAY
-# MAROON = machine.Neopixel.MAROON
-# OLIVE = machine.Neopixel.OLIVE
-# TEAL = machine.Neopixel.TEAL
-# NAVY = machine.Neopixel.NAVY
 
 color_array = [GREEN, PURPLE, ORANGE, YELLOW, CYAN, PINK, OFF, WHITE]
 
@@ -122,6 +94,10 @@ net_if = do_connect()
 if True:   # change to True if you want to write the time!
     # Set machine.RTC and hw rtc to NTP time if available
     if net_if.isconnected():
+        print("Getting timezone from timezone server")
+        res = requests.get(url='http://api.timezonedb.com/v2.1/get-time-zone?key=F4XA80XV2770&format=json&by=zone&zone=Australia/Melbourne').text
+        TZ_SECONDS = json.loads(res).get('gmtOffset')
+        print('TZ_SECONDS: ',TZ_SECONDS)
         print("Getting time from NTP server")
         # todo: get time in seconds, add TZ offset, convert back to tuple and use that to set rtc.datetime
         t = ntptime.time()+TZ_SECONDS
