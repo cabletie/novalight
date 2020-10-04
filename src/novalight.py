@@ -2,7 +2,7 @@
 # main.py
 import random
 import secrets
-from machine import Pin, I2C, RTC
+from machine import Pin, I2C, RTC, WDT
 # from machine import neopixel
 import neopixel as np
 # import machine
@@ -11,6 +11,7 @@ import lib.urtc as urtc
 import ntptime
 import network
 import utime
+import math
 
 # import adafruit_pcf8523
 # https://docs.micropython.org/en/latest/library/time.html
@@ -251,7 +252,18 @@ def friday_feels():
     wait = 0.05
     what_even_is_time(bottom_nova, top_nova, star_frag, wait)
 
+wdt = WDT(timeout=10000)  # enable it with a timeout of 2s
+
+start = 0
 while True:
+    # Feed the watchdog 
+    # (I always thought you patted or kicked the watchdog, 
+    # but apparently in Python, you feed it)
+    delta = utime.ticks_diff(utime.ticks_ms(), start) # compute time difference
+    start = utime.ticks_ms() # get millisecond counter
+    print("Since: ",delta)
+    wdt.feed()
+
     # Get time from our RTC
     rdt = rtc.datetime()
     tm = urtc.datetime_tuple(*rdt)
