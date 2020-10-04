@@ -1,4 +1,5 @@
-# Novalight as modified by @cabletie
+# Novalight as ported to micropython by @cabletie
+# Original code by Charlyn https://charlyn.codes/ac-nova-light-clock/
 # main.py
 import random
 import secrets
