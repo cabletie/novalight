@@ -3,7 +3,8 @@
 # main.py
 import random
 import secrets
-from machine import Pin, I2C, RTC, WDT
+from machine import * # Pin, I2C, RTC, WDT
+# import machine
 # from machine import neopixel
 import neopixel as np
 # import machine
@@ -109,7 +110,7 @@ if True:   # change to True if you want to write the time!
         hw_clock.datetime(tm)
     else:
         # No network, Get time from hw rtc
-        dtt = hw_clock.datetime()
+        dtt = hw_clock.datetime() 
         # And set internal RTC
         print(dtt)
         rtc.datetime((dtt.year, dtt.month, dtt.day, dtt.weekday, dtt.hour, dtt.minute, dtt.second, 0))
@@ -188,7 +189,7 @@ def color_chase(light_unit, color, wait):
         light_unit[i] = color
         utime.sleep(wait)
         light_unit.write()
-    utime.sleep(0.5)
+    # utime.sleep(0.5)
 
 # BLACK, WHITE, RED, LIME, BLUE, YELLOW, CYAN, MAGENTA, SILVER, GRAY, MAROON, OLIVE, GREEN, PURPLE, TEAL, NAVY
 def rainbow_chase(light_unit, wait):
@@ -213,7 +214,7 @@ def what_even_is_time(light_one, light_two, light_three, wait):
 
     color_chase(light_one, color1, wait)
     color_chase(light_two, color2, wait)
-    color_chase(light_three, color3, wait)
+    color_chase(light_three, color3+(0,), wait)
 
 def the_time_is_now(color, friday):
     if not friday:
@@ -231,14 +232,20 @@ def friday_feels():
 
 wdt = WDT(timeout=10000)  # enable it with a timeout of 2s
 
+# Get time from our RTC
+rdt = rtc.datetime()
+tm = urtc.datetime_tuple(*rdt)
+print("The date is %s %d/%d/%d" % (days[tm.weekday], tm.day, tm.month, tm.year))
+print("The time is %d:%02d:%02d" % (tm.hour, tm.minute, tm.second))
+
 start = 0
 while True:
     # Feed the watchdog 
     # (I always thought you patted or kicked the watchdog, 
     # but apparently in Python, you feed it)
-    delta = utime.ticks_diff(utime.ticks_ms(), start) # compute time difference
-    start = utime.ticks_ms() # get millisecond counter
-    print("Since: ",delta)
+    # Next two lines for debugging how long between feeds
+    # delta = utime.ticks_diff(utime.ticks_ms(), start) # compute time difference
+    # start = utime.ticks_ms() # get millisecond counter
     wdt.feed()
 
     # Get time from our RTC
@@ -253,21 +260,24 @@ while True:
     # print("Hour:", tm.hour)
     # print("Minute:", tm.minute)
     # print("Second:", tm.second)
-    if tm.weekday == 5:
+    if tm.weekday == 4:
         is_it_friday = True
     else:
         is_it_friday = False
 
-    print("The date is %s %d/%d/%d" % (days[tm.weekday], tm.day, tm.month, tm.year))
-    print("The time is %d:%02d:%02d" % (tm.hour, tm.minute, tm.second))
+    # print("Weekday: %d" % (tm.weekday))
 
     if tm.hour >= 0 and tm.hour < 7: # 12a to 7a, you should be sleeping
         allOff()
+        print("All-offing")
+        utime.sleep(1)
         continue
 
     # Top nova light indicates time span
     if tm.minute == 0 and (tm.second >= 0 and tm.second < 10): # top of the hour party cuckoo rainbow
+        wdt.feed()
         rainbow_chase(top_nova, 0.1)
+        wdt.feed()
         rainbow_chase(top_nova, 0.1)
 
     if tm.hour >= 0 and tm.hour < 7: # 12a to 7a, you should be sleeping
@@ -284,9 +294,9 @@ while True:
         the_time_is_now(RED, is_it_friday) # super novaaaa
 
     # Bottom nova light indicates day of week
+    # is_it_friday = False
     if days[tm.weekday] == "Sunday" or days[tm.weekday] == "Saturday":
         it_feels_like(WHITE)
-        is_it_friday = False
     elif days[tm.weekday] == "Monday":
         it_feels_like(BLUE)
     elif days[tm.weekday] == "Tuesday":
@@ -294,5 +304,5 @@ while True:
     elif days[tm.weekday] == "Wednesday" or days[tm.weekday] == "Thursday":
         it_feels_like(PINK)
     elif days[tm.weekday] == "Friday":
-        is_it_friday = True
+        # is_it_friday = True
         friday_feels()
