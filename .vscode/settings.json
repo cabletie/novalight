@@ -5,25 +5,29 @@
         ".micropy/BradenM-micropy-stubs-9569403/frozen",
         ".micropy/BradenM-micropy-stubs-27ee48a/frozen",
         ".micropy/BradenM-micropy-stubs-9569403/stubs",
-        ".micropy/novalight"
+        ".micropy/novalight",
+        "src/lib"
     ],
     "python.autoComplete.typeshedPaths": [
         ".micropy/BradenM-micropy-stubs-9569403/frozen",
         ".micropy/BradenM-micropy-stubs-27ee48a/frozen",
         ".micropy/BradenM-micropy-stubs-9569403/stubs",
-        ".micropy/novalight"
+        ".micropy/novalight",
+        "src/lib"
     ],
     "python.analysis.typeshedPaths": [
         ".micropy/BradenM-micropy-stubs-9569403/frozen",
         ".micropy/BradenM-micropy-stubs-27ee48a/frozen",
         ".micropy/BradenM-micropy-stubs-9569403/stubs",
-        ".micropy/novalight"
+        ".micropy/novalight",
+        "src/lib"
     ],
     "python.analysis.extraPaths": [
         ".micropy/BradenM-micropy-stubs-9569403/frozen",
         ".micropy/BradenM-micropy-stubs-27ee48a/frozen",
         ".micropy/BradenM-micropy-stubs-9569403/stubs",
-        ".micropy/novalight"
+        ".micropy/novalight",
+        "src/lib"
     ],
     "python.linting.pylintEnabled": true,
     "python.languageServer": "Microsoft",

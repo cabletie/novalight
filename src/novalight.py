@@ -2,7 +2,7 @@
 # Original code by Charlyn https://charlyn.codes/ac-nova-light-clock/
 # main.py
 import random
-import secrets
+# import secrets
 from machine import * # Pin, I2C, RTC, WDT
 # import machine
 # from machine import neopixel
@@ -77,21 +77,22 @@ gamma = 0.11 # affects the width of peak (more or less darkness)
 beta = 0.5 # shifts the gaussian to be symmetric
 
 # Connect to network to get NTP time
-def do_connect():
-    sta_if = network.WLAN(network.STA_IF)
-    if not sta_if.isconnected():
-        print('connecting to network...')
-        sta_if.active(True)
-        sta_if.connect(secrets.SSID, secrets.PW)
-        timeout = 0
-        while not sta_if.isconnected() and (timeout < 100):
-            utime.sleep(0.1)
-            timeout += 1
-        print('timeout:',timeout)
-    print('network config:', sta_if.ifconfig())
-    return sta_if
+# def do_connect():
+#     sta_if = network.WLAN(network.STA_IF)
+#     if not sta_if.isconnected():
+#         print('connecting to network...')
+#         sta_if.active(True)
+#         sta_if.connect(secrets.SSID, secrets.PW)
+#         timeout = 0
+#         while not sta_if.isconnected() and (timeout < 100):
+#             utime.sleep(0.1)
+#             timeout += 1
+#         print('timeout:',timeout)
+#     print('network config:', sta_if.ifconfig())
+#     return sta_if
 
-net_if = do_connect()
+# net_if = do_connect()
+net_if = network.WLAN(network.STA_IF)
 
 if True:   # change to True if you want to write the time!
     # Set machine.RTC and hw rtc to NTP time if available
