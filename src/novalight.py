@@ -2,14 +2,9 @@
 # Original code by Charlyn https://charlyn.codes/ac-nova-light-clock/
 # main.py
 import random
-# import secrets
 from machine import * # Pin, I2C, RTC, WDT
-# import machine
-# from machine import neopixel
 import neopixel as np
-# import machine
 import lib.urtc as urtc
-# import lib.ntptime
 import ntptime
 import network
 import utime
@@ -67,7 +62,6 @@ hw_clock = urtc.PCF8523(myI2C)
 TZ = +11
 TZ_SECONDS = TZ * 60 * 60
 rtc = RTC()
-# rtc = RTC.init(2020,1,1,0,0,0,0)
 is_it_friday = True
 days = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "Error")
 
@@ -76,22 +70,8 @@ smoothness_pts = 256 # larger=slower change in brightness
 gamma = 0.11 # affects the width of peak (more or less darkness)
 beta = 0.5 # shifts the gaussian to be symmetric
 
-# Connect to network to get NTP time
-# def do_connect():
-#     sta_if = network.WLAN(network.STA_IF)
-#     if not sta_if.isconnected():
-#         print('connecting to network...')
-#         sta_if.active(True)
-#         sta_if.connect(secrets.SSID, secrets.PW)
-#         timeout = 0
-#         while not sta_if.isconnected() and (timeout < 100):
-#             utime.sleep(0.1)
-#             timeout += 1
-#         print('timeout:',timeout)
-#     print('network config:', sta_if.ifconfig())
-#     return sta_if
-
-# net_if = do_connect()
+# This is set up and connected in the setup.py that shoud be called
+# before this.
 net_if = network.WLAN(network.STA_IF)
 
 if True:   # change to True if you want to write the time!
@@ -102,33 +82,25 @@ if True:   # change to True if you want to write the time!
         TZ_SECONDS = json.loads(res).get('gmtOffset')
         print('TZ_SECONDS: ',TZ_SECONDS)
         print("Getting time from NTP server")
-        # todo: get time in seconds, add TZ offset, convert back to tuple and use that to set rtc.datetime
+        # Create an epoch based seconds time with retrieved time + TZ offset
         t = ntptime.time()+TZ_SECONDS
-        # (0 year, 1 month, 2 mday, 3 hour, 4 minute, 5 second, 6 weekday, 7 yearday)
+        # Convert it to a tuple
         utm = utime.localtime(t)
+        # Set machine RTC with the new time
         rtc.datetime((utm[0],utm[1],utm[2],utm[6],utm[3],utm[4],utm[5],0))
+        # Get current time from machine RTC
         tm = rtc.datetime()
+        # And use it to set Battery Backed RTC
         hw_clock.datetime(tm)
     else:
-        # No network, Get time from hw rtc
+        # No network, Get time from battery backed RTC
         dtt = hw_clock.datetime() 
-        # And set internal RTC
+        # And set machine RTC from it
         print(dtt)
         rtc.datetime((dtt.year, dtt.month, dtt.day, dtt.weekday, dtt.hour, dtt.minute, dtt.second, 0))
+
+    # Print the time we ended up with
     print(rtc.datetime())
-    # t = lib.ntptime.time() # Get the time from the NTP server as seconds since epoch
-    # Adjust for timezone (yes, we store localtime on the RTC ...)
-    # t += TZ_SECONDS
-    # And convert to tuple
-    # tm = utime.localtime(t)
-
-    ## uncomment for debugging
-    # print("year, mon, date, hour, min, sec,  wday, doy")
-    # print("NTP Time converted by utime.localtime(): ", tm, t)
-    ## Adjust for day of week from 1-7 to 0-6
-    # print("Write to RTC in this order: ", tm[0], tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0)
-    # rtc.datetime((tm[0]-30, tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0))
-
 
 def solid(light_unit, color):
     for i in range(light_unit.n):
@@ -156,6 +128,7 @@ def breathe2(light_unit, color):
     color_arr = color
 
     for ii in range(smoothness_pts):
+        # Uncomment one of Linear, Circular or Gaussian to your liking
         # Linear
         # brightness_val = 1.0 - math.fabs((2.0*(ii/smoothness_pts)) - 1.0)
         # Circular
@@ -168,6 +141,7 @@ def breathe2(light_unit, color):
         utime.sleep(.02)
         light_unit.write()
 
+# For later - do breathe in the background or maybe via uasyncio
 def breathecb(timer):
     global ii, smoothness_pts, gamma, beta, color_arr, breathe_en, star_frag
 
@@ -231,7 +205,9 @@ def friday_feels():
     wait = 0.05
     what_even_is_time(bottom_nova, top_nova, star_frag, wait)
 
-wdt = WDT(timeout=10000)  # enable it with a timeout of 2s
+# enable WDT with a timeout of 10s
+# This gives enough time for the inline colour chases to work
+wdt = WDT(timeout=10000)  
 
 # Get time from our RTC
 rdt = rtc.datetime()
@@ -253,24 +229,13 @@ while True:
     rdt = rtc.datetime()
     tm = urtc.datetime_tuple(*rdt)
 
-    ## Uncomment for debugging
-    # print("Year: ",tm.year)
-    # print("Month:", tm.month)
-    # print("Day:", tm.day)
-    # print("Weekday:", tm.weekday)
-    # print("Hour:", tm.hour)
-    # print("Minute:", tm.minute)
-    # print("Second:", tm.second)
     if tm.weekday == 4:
         is_it_friday = True
     else:
         is_it_friday = False
 
-    # print("Weekday: %d" % (tm.weekday))
-
     if tm.hour >= 0 and tm.hour < 7: # 12a to 7a, you should be sleeping
         allOff()
-        print("All-offing")
         utime.sleep(1)
         continue
 
