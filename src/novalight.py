@@ -1,4 +1,7 @@
 # Novalight as ported to micropython by @cabletie
+# Running on TTGO T-Display and ESP32 DEV KIT V2 running Micropython 1.13
+# Also conected to Adafruit RTC PCF8523 on pins 21,22 SDA,SCL respectively.
+# Adafruit NeoPixel Ring x2 on 25,26 and NeoPixel Jewel7 on 27
 # Original code by Charlyn https://charlyn.codes/ac-nova-light-clock/
 # main.py
 import random

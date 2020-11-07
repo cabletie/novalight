@@ -1,6 +1,6 @@
 [MASTER]
-# Loaded Stubs:  esp32-micropython-1.12.0 
-init-hook='import sys;sys.path.insert(1, ".micropy/BradenM-micropy-stubs-9569403/frozen");sys.path.insert(1, ".micropy/BradenM-micropy-stubs-27ee48a/frozen");sys.path.insert(1, ".micropy/BradenM-micropy-stubs-9569403/stubs");sys.path.insert(1, ".micropy/novalight");'
+# Loaded Stubs:  esp32-micropython-1.13.0
+init-hook='import sys;sys.path.insert(1, "./src/lib");sys.path.insert(1, "stubs/cpython_patch");sys.path.insert(1, "stubs/mpy_1_13-nightly_frozen/esp32/GENERIC");sys.path.insert(1, "stubs/esp32_1_13_0-103");'
 
 [MESSAGES CONTROL]
 # Only show warnings with the listed confidence levels. Leave empty to show

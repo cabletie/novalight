@@ -1,35 +1,31 @@
 {
     "python.linting.enabled": true,
-    "python.jediEnabled": false,
-    "python.autoComplete.extraPaths": [
-        ".micropy/BradenM-micropy-stubs-9569403/frozen",
-        ".micropy/BradenM-micropy-stubs-27ee48a/frozen",
-        ".micropy/BradenM-micropy-stubs-9569403/stubs",
-        ".micropy/novalight",
-        "src/lib"
-    ],
-    "python.autoComplete.typeshedPaths": [
-        ".micropy/BradenM-micropy-stubs-9569403/frozen",
-        ".micropy/BradenM-micropy-stubs-27ee48a/frozen",
-        ".micropy/BradenM-micropy-stubs-9569403/stubs",
-        ".micropy/novalight",
-        "src/lib"
-    ],
-    "python.analysis.typeshedPaths": [
-        ".micropy/BradenM-micropy-stubs-9569403/frozen",
-        ".micropy/BradenM-micropy-stubs-27ee48a/frozen",
-        ".micropy/BradenM-micropy-stubs-9569403/stubs",
-        ".micropy/novalight",
-        "src/lib"
-    ],
-    "python.analysis.extraPaths": [
-        ".micropy/BradenM-micropy-stubs-9569403/frozen",
-        ".micropy/BradenM-micropy-stubs-27ee48a/frozen",
-        ".micropy/BradenM-micropy-stubs-9569403/stubs",
-        ".micropy/novalight",
-        "src/lib"
-    ],
     "python.linting.pylintEnabled": true,
     "python.languageServer": "Microsoft",
+    "python.jediEnabled": false,
+    "python.autoComplete.extraPaths": [
+        "./src/lib",
+         "stubs/cpython_patch",
+         "stubs/mpy_1_13-nightly_frozen/esp32/GENERIC", 
+         "stubs/esp32_1_13_0-103",
+    ],
+    "python.autoComplete.typeshedPaths": [
+        "./src/lib",
+        "stubs/cpython_patch",
+        "stubs/mpy_1_13-nightly_frozen/esp32/GENERIC", 
+        "stubs/esp32_1_13_0-103",
+    ],
+    "python.analysis.typeshedPaths": [
+        "./src/lib",
+         "stubs/cpython_patch",
+         "stubs/mpy_1_13-nightly_frozen/esp32/GENERIC", 
+         "stubs/esp32_1_13_0-103",
+    ],
+    "python.analysis.extraPaths": [
+        "./src/lib",
+         "stubs/cpython_patch",
+         "stubs/mpy_1_13-nightly_frozen/esp32/GENERIC", 
+         "stubs/esp32_1_13_0-103",
+    ],
     "python.formatting.provider": "black"
 }
