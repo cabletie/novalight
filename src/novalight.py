@@ -48,6 +48,11 @@ star_frag = np.NeoPixel(pin27, STAR_FRAG_LEN, bpp=4)
 top_nova = np.NeoPixel(pin25, TOP_NOVA_LEN)
 bottom_nova = np.NeoPixel(pin26, BOTTOM_NOVA_LEN)
 
+# Set up Christmas breathe
+color_arr_green = (50, 150, 50, 0) # Green
+color_arr_red = (231, 0, 0, 0) # Pink
+current_breathe = 1 # Start with Red
+
 # Start with eveything turned off
 def allOff():
     star_frag.fill(OFF+(0,))
@@ -192,13 +197,20 @@ def what_even_is_time(light_one, light_two, light_three, wait):
 
     color_chase(light_one, color1, wait)
     color_chase(light_two, color2, wait)
-    color_chase(light_three, color3+(0,), wait)
+    # color_chase(light_three, color3+(0,), wait)
 
 def the_time_is_now(color, friday):
-    if not friday:
-        breathe2(star_frag, WHITE_RGBW)
-        solid(top_nova, color)
-        top_nova.write()
+    global current_breathe
+    if True:
+    # if not friday:
+        if current_breathe == 1:
+            breathe2(star_frag, color_arr_red)
+            current_breathe = 0
+        else:
+            breathe2(star_frag, color_arr_green)
+            current_breathe = 1
+    solid(top_nova, color)
+    top_nova.write()
 
 def it_feels_like(color):
     solid(bottom_nova, color)
@@ -248,7 +260,7 @@ while True:
         rainbow_chase(top_nova, 0.1)
         wdt.feed()
         rainbow_chase(top_nova, 0.1)
-
+    is_it_friday = True
     if tm.hour >= 0 and tm.hour < 7: # 12a to 7a, you should be sleeping
         the_time_is_now(OFF, is_it_friday)
     elif tm.hour >= 7 and tm.hour < 12: # 7a to 12p rise and shine! it's morning!
@@ -265,7 +277,8 @@ while True:
     # Bottom nova light indicates day of week
     # is_it_friday = False
     if days[tm.weekday] == "Sunday" or days[tm.weekday] == "Saturday":
-        it_feels_like(WHITE)
+        friday_feels()
+        # it_feels_like(WHITE)
     elif days[tm.weekday] == "Monday":
         it_feels_like(BLUE)
     elif days[tm.weekday] == "Tuesday":
